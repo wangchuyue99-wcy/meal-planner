@@ -132,7 +132,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Toast, Dialog, Popup, Field, Picker, Checkbox, CheckboxGroup } from 'vant'
+import { showToast, showConfirmDialog, Popup, Field, Picker, Checkbox, CheckboxGroup } from 'vant'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const router = useRouter()
@@ -228,7 +228,7 @@ async function loadItems() {
     allItems.value = data || []
   } catch (e) {
     console.error('加载食材失败', e)
-    Toast('加载失败：' + (e.message || e))
+    showToast('加载失败：' + (e.message || e))
   } finally {
     loading.value = false
   }
@@ -236,15 +236,15 @@ async function loadItems() {
 
 async function save() {
   if (!form.value.name.trim()) {
-    Toast('请填写名称')
+    showToast('请填写名称')
     return
   }
   if (!form.value.category) {
-    Toast('请选择分类')
+    showToast('请选择分类')
     return
   }
   if (!form.value.meal_types.length) {
-    Toast('请选择至少一个餐次')
+    showToast('请选择至少一个餐次')
     return
   }
 
@@ -264,42 +264,55 @@ async function save() {
         .update(payload)
         .eq('id', editingId.value)
       if (error) throw error
-      Toast('已更新 ✅')
+      showToast('已更新 ✅')
     } else {
       const maxSort = allItems.value.reduce((m, i) => Math.max(m, i.sort_order || 0), 0)
       const { error } = await supabase
         .from('food_items')
         .insert({ ...payload, sort_order: maxSort + 1 })
       if (error) throw error
-      Toast('已添加 ✅')
+      showToast('已添加 ✅')
     }
     showForm.value = false
     await loadItems()
   } catch (e) {
     console.error('保存失败', e)
-    Toast('保存失败：' + (e.message || e))
+    showToast('保存失败：' + (e.message || e))
   }
 }
 
-function confirmDelete(item) {
-  Dialog.confirm({
-    title: '删除食材',
-    message: `确定删除「${item.name}」吗？`,
-    confirmButtonColor: '#FF6B9D'
-  }).then(async () => {
-    try {
-      const { error } = await supabase
-        .from('food_items')
-        .delete()
-        .eq('id', item.id)
-      if (error) throw error
-      Toast('已删除 🗑️')
-      await loadItems()
-    } catch (e) {
-      console.error('删除失败', e)
-      Toast('删除失败：' + (e.message || e))
-    }
-  }).catch(() => {})
+async function confirmDelete(item) {
+  if (!supabase) {
+    showToast('未连接云端，无法删除')
+    return
+  }
+  try {
+    await showConfirmDialog({
+      title: '删除食材',
+      message: `确定删除「${item.name}」吗？`,
+      confirmButtonColor: '#FF6B9D',
+      confirmButtonText: '删除'
+    })
+    await doDelete(item)
+  } catch (e) {
+    // 用户点击取消（reject 值为 'cancel'）时静默，其余视为删除失败需提示
+    if (e === 'cancel' || e?.action === 'cancel') return
+    console.error('删除失败', e)
+    showToast('删除失败：' + (e.message || e))
+  }
+}
+
+async function doDelete(item) {
+  // 先清理被引用记录，避免外键约束导致删除失败
+  await supabase.from('daily_selections').delete().eq('food_item_id', item.id)
+  await supabase.from('shopping_list').delete().eq('food_item_id', item.id)
+  const { error } = await supabase
+    .from('food_items')
+    .delete()
+    .eq('id', item.id)
+  if (error) throw error
+  showToast('已删除 🗑️')
+  await loadItems()
 }
 
 function goBack() {

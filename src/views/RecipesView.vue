@@ -74,7 +74,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Toast } from 'vant'
+import { showToast } from 'vant'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const router = useRouter()
@@ -84,7 +84,7 @@ const useCloud = ref(localStorage.getItem('mode') !== 'local')
 function toggleMode() {
   useCloud.value = !useCloud.value
   localStorage.setItem('mode', useCloud.value ? 'cloud' : 'local')
-  Toast({ message: useCloud.value ? '已切到云端模式' : '已切到本地模式', duration: 1000 })
+  showToast({ message: useCloud.value ? '已切到云端模式' : '已切到本地模式', duration: 1000 })
   init()
 }
 
@@ -200,7 +200,7 @@ async function toggleItem(item) {
         .eq('user_id', userId).eq('select_date', date)
         .eq('meal_type', meal).eq('food_item_id', foodId)
     }
-    Toast({ message: '已取消 💨', duration: 800 })
+    showToast({ message: '已取消 💨', duration: 800 })
   } else {
     selectedIds.value = new Set([...selectedIds.value, foodId])
     if (useCloud.value && isSupabaseConfigured && supabase) {
@@ -208,7 +208,7 @@ async function toggleItem(item) {
         user_id: userId, select_date: date, meal_type: meal, food_item_id: foodId
       }, { onConflict: 'user_id,select_date,meal_type,food_item_id' })
     }
-    Toast({ message: '已选择 ✅', duration: 800 })
+    showToast({ message: '已选择 ✅', duration: 800 })
   }
   syncLocal()
 }

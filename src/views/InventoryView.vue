@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Button, Tag, Dialog } from 'vant'
+import { Button, Tag, showConfirmDialog } from 'vant'
 import { useInventoryStore } from '../store/inventory'
 
 const store = useInventoryStore()
@@ -43,13 +43,19 @@ function saveForm() {
   showForm.value = false
 }
 
-function removeItem(id) {
-  Dialog.confirm({
-    title: '确认删除',
-    message: '确定要删除这个食材吗？',
-  }).then(() => {
+async function removeItem(id) {
+  try {
+    await showConfirmDialog({
+      title: '确认删除',
+      message: '确定要删除这个食材吗？',
+      confirmButtonColor: '#FF6B9D',
+      confirmButtonText: '删除'
+    })
     store.removeItem(id)
-  }).catch(() => {})
+  } catch (e) {
+    if (e === 'cancel' || e?.action === 'cancel') return
+    console.error('删除失败', e)
+  }
 }
 </script>
 

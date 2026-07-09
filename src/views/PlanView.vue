@@ -59,7 +59,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Toast } from 'vant'
+import { showToast, showSuccessToast } from 'vant'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const router = useRouter()
@@ -115,7 +115,7 @@ const useCloud = ref(localStorage.getItem('mode') !== 'local')
 function toggleMode() {
   useCloud.value = !useCloud.value
   localStorage.setItem('mode', useCloud.value ? 'cloud' : 'local')
-  Toast({ message: useCloud.value ? '已切到云端模式' : '已切到本地模式', duration: 1000 })
+  showToast({ message: useCloud.value ? '已切到云端模式' : '已切到本地模式', duration: 1000 })
   loadData()
 }
 
@@ -186,7 +186,7 @@ async function removeItem(meal, foodId) {
     }
   } catch(e) {}
   loadData()
-  Toast.success('已移除 💨')
+  showSuccessToast('已移除 💨')
 }
 
 function changeDate(delta) {

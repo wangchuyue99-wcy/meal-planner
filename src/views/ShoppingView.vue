@@ -83,7 +83,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Toast } from 'vant'
+import { showToast, showSuccessToast } from 'vant'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const FOOD_MAP = {
@@ -137,7 +137,7 @@ const useCloud = ref(localStorage.getItem('mode') !== 'local')
 function toggleMode() {
   useCloud.value = !useCloud.value
   localStorage.setItem('mode', useCloud.value ? 'cloud' : 'local')
-  Toast({ message: useCloud.value ? '已切到云端模式' : '已切到本地模式', duration: 1000 })
+  showToast({ message: useCloud.value ? '已切到云端模式' : '已切到本地模式', duration: 1000 })
 }
 
 const today = new Date()
@@ -264,7 +264,7 @@ function togglePurchased(item) {
 
 function markAllDone() {
   shoppingList.value.forEach(item => { item.purchased = true })
-  Toast.success('🎉 已全部标记')
+  showSuccessToast('🎉 已全部标记')
 }
 
 onMounted(() => { generateList() })

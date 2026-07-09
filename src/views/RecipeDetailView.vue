@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Button, Tag, Toast } from 'vant'
+import { Button, Tag, showSuccessToast } from 'vant'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useMenuStore } from '../store/menu'
 
@@ -128,7 +128,7 @@ function addToMenu() {
     id: route.params.id,
     name: recipe.value.name
   })
-  Toast.success('已加入午餐')
+  showSuccessToast('已加入午餐')
   router.push('/plan')
 }
 
