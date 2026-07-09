@@ -9,6 +9,7 @@
       <button class="cloud-btn" :class="{ local: !useCloud }" @click="toggleMode">
         {{ useCloud ? '☁️ 云端' : '📱 本地' }}
       </button>
+      <button class="manage-btn" @click="goManage" title="管理食材">✏️</button>
     </div>
 
     <!-- 日期 -->
@@ -249,6 +250,10 @@ function goToPlan() {
   router.push('/plan')
 }
 
+function goManage() {
+  router.push('/manage')
+}
+
 async function init() {
   if (useCloud.value && isSupabaseConfigured && supabase) {
     try {
@@ -311,6 +316,20 @@ watch(selectedDate, () => loadSelections())
   background: #F5F5FF;
   color: #B8B8D1;
 }
+
+/* 管理按钮 */
+.manage-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid #B8B8D1;
+  background: #F5F5FF;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+.manage-btn:active { transform: scale(0.92); background: #EDEDFB; }
 
 /* 日期药丸 */
 .date-pill {
